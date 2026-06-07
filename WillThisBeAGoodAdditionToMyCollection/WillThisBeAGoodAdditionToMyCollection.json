@@ -1,0 +1,8 @@
+{
+  "Author": "kwassant",
+  "Name": "WillThisBeAGoodAdditionToMyCollection",
+  "Punchline": "Such dots, much information, wowie",
+  "Description": "Displays personalizable colored dots on item drops in dungeons to display if you can and have stored them in your Armoire.",
+  "ApplicableVersion": "any",
+  "Tags": ["loot", "overlay", "collection", "armoire", "dungeon", "gear"]
+}
