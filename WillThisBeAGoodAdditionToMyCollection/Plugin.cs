@@ -196,20 +196,16 @@ public unsafe sealed class Plugin : IDalamudPlugin
                     continue;
                 }
 
-                var resultEntry = new LootEntry { Position = position, Size = size, Status = ItemStatus.NotObtained };
                 var swordInCabinet = ItemIsInCabinet(swordCabinetRowId);
                 var shieldInCabinet = ItemIsInCabinet(shieldCabinetRowId);
 
-
-                if (swordInCabinet)
+                var resultEntry = new LootEntry
                 {
-                    resultEntry.Status = ItemStatus.Obtained;
-                }
-
-                if (shieldInCabinet)
-                {
-                    resultEntry.ShieldStatus = ItemStatus.Obtained;
-                }
+                    Position = position,
+                    Size = size,
+                    Status = swordInCabinet ? ItemStatus.Obtained : ItemStatus.NotObtained,
+                    ShieldStatus = shieldInCabinet ? ItemStatus.Obtained : ItemStatus.NotObtained
+                };
 
                 if (swordInCabinet && shieldInCabinet)
                 {
