@@ -5,7 +5,6 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Common.Math;
@@ -36,7 +35,7 @@ public unsafe sealed class Plugin : IDalamudPlugin
             .Where(row => row.RowId >= 1048 && row.Item.RowId != 0)
             .ToFrozenDictionary(row => row.Item.RowId, row => row.RowId));
 
-    private static readonly List<InventoryType> bags = new List<InventoryType>()
+    private static readonly List<InventoryType> Bags = new List<InventoryType>()
     {
         InventoryType.EquippedItems,
         InventoryType.SaddleBag1, InventoryType.SaddleBag2,
@@ -261,20 +260,20 @@ public unsafe sealed class Plugin : IDalamudPlugin
 
     private bool ItemIsInCabinet(uint cabinetRowId)
     {
-        (var byteIndex, var bitOffset) = Math.DivRem(cabinetRowId, 8);
-        if (UIState.Instance()->Cabinet.UnlockedItems.Count >= byteIndex && (UIState.Instance()->Cabinet.UnlockedItems[(int)byteIndex] & (1 << (int)bitOffset)) != 0)
+        var itemFinderModule = ItemFinderModule.Instance();
+        (var uintIndex, var bitOffset) = Math.DivRem(cabinetRowId - 1048, 32);
+
+        if (uintIndex < 0 || uintIndex >= itemFinderModule->CabinetItemUnlockBits.Length)
         {
-            return true;
+            return false;
         }
 
-        var itemFinderModule = ItemFinderModule.Instance();
-        (byteIndex, bitOffset) = Math.DivRem(cabinetRowId - 1048, 32);
-        if (itemFinderModule->CabinetItemUnlockBits.Length >= byteIndex)
+        if ((itemFinderModule->CabinetItemUnlockBits[(int)uintIndex] & (1 << (int)bitOffset)) != 0)
         {
-            if ((itemFinderModule->CabinetItemUnlockBits[(int)byteIndex] & (1 << (int)bitOffset)) != 0)
-            {
-                return true;
-            }
+#if DEBUG
+            Log.Information($"Item Discovered through Item Finder Module");
+#endif
+            return true;
         }
 
         return false;
@@ -289,7 +288,7 @@ public unsafe sealed class Plugin : IDalamudPlugin
             return false;
         }
 
-        foreach (var bagType in bags)
+        foreach (var bagType in Bags)
         {
             var bag = inventoryManager->GetInventoryContainer(bagType);
             if (bag is null)
