@@ -260,8 +260,18 @@ public unsafe sealed class Plugin : IDalamudPlugin
 
     private bool ItemIsInCabinet(uint cabinetRowId)
     {
+        var uiState = FFXIVClientStructs.FFXIV.Client.Game.UI.UIState.Instance();
+        (var byteIndex, var bitOffset) = Math.DivRem(cabinetRowId, 8);
+        if (uiState->Cabinet.UnlockedItems.Count >= byteIndex && (uiState->Cabinet.UnlockedItems[(int)byteIndex] & (1 << (int)bitOffset)) != 0)
+        {
+#if DEBUG
+            Log.Information($"Item Discovered through UI State");
+#endif
+            return true;
+        }
+
         var itemFinderModule = ItemFinderModule.Instance();
-        (var uintIndex, var bitOffset) = Math.DivRem(cabinetRowId - 1048, 32);
+        (var uintIndex, bitOffset) = Math.DivRem(cabinetRowId - 1048, 32);
 
         if (uintIndex < 0 || uintIndex >= itemFinderModule->CabinetItemUnlockBits.Length)
         {
